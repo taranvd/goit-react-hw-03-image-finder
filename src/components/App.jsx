@@ -18,48 +18,62 @@ export class App extends Component {
     isLoading: false,
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { query: prevQuery, page: prevPage } = prevState;
-    const { page, query, totalImg, images } = this.state;
-    const normalizeQuery = query.slice(8, query.length);
 
-    if (query === '') {
+  async componentDidUpdate(prevProps, prevState) {
+    const { query: prevQuery, page: prevPage } = prevState;
+    const { query, page, totalImg, images } = this.state;
+
+    const isDifferentQueryOrPage = prevQuery !== query || prevPage !== page;
+    const isEmptyQuery = query === '';
+
+    if (isEmptyQuery) {
       warn('Please enter something 👀');
       return;
     }
 
-    if (prevQuery !== query || prevPage !== page) {
-      this.setState({ isLoading: true });
+  if (isDifferentQueryOrPage) {
+    this.setState({ isLoading: true });
 
-      setTimeout(async () => {
-        try {
-          const { hits, totalHits } = await fetchImages(normalizeQuery, page);
+    try {
+      const normalizeQuery = query.slice(8, query.length);
+      const { hits, totalHits } = await fetchImages(normalizeQuery, page);
 
-          if (totalHits !== 0 && totalImg === 0) {
-            success(`Find ${totalHits} images`);
-          }
+      const isNoImagesFound = totalHits === 0;
+      const haveMoreImages = images.length + hits.length === totalHits && totalImg > 0;
 
-          this.setState(prevState => ({
-            images:
-              prevState.images.length === 0
-                ? hits
-                : [...prevState.images, ...hits],
-            totalImg: totalHits,
-          }));
+      if (isNoImagesFound) {
+        warn('Image not found. Try something else 😐');
+        return;
+      }
 
-          if (images.length + hits.length === totalHits && totalImg > 0) {
-            info('No more photos!');
-          } else if (totalHits === 0) {
-            warn('Image not found. Try something else 😐');
-          }
-        } catch (warn) {
-          console.warn(warn);
-          error('Oops! something went wrong. Please try again later. ❌');
-        } finally {
-          this.setState({ isLoading: false });
-        }
-      });
+      
+      if (totalHits !== 0 && totalImg === 0) { 
+        success(
+          <span>
+            Found <b>{totalHits} </b>pictures 🌆
+          </span>
+          );
+      }
+
+      this.setState(prevState => ({
+        images:
+          prevState.images.length === 0
+           ? hits
+           : [...prevState.images, ...hits],
+        totalImg: totalHits,
+      }));
+
+      if (haveMoreImages) {
+        info('No more photos!');
+      }
+
+    } catch (warn) {
+      console.warn(warn);
+      error('Oops! something went wrong. Please try again later. ❌');
+    } finally {
+      this.setState({ isLoading: false });
     }
+  }
   }
 
   handleQueryFormSubmit = newQuery =>
@@ -78,6 +92,8 @@ export class App extends Component {
 
   render() {
     const { images, totalImg, isLoading } = this.state;
+    const shouldShowButton =
+      !isLoading && images.length > 0 && images.length < totalImg;
     return (
       <AppWrapp>
         <Searchbar onSubmit={this.handleQueryFormSubmit} />
@@ -85,11 +101,7 @@ export class App extends Component {
 
         {isLoading && <Loader />}
 
-        {isLoading ||
-        images.length === 0 ||
-        images.length === totalImg ? null : (
-          <Button loadMore={this.handleLoadMoreButton} />
-        )}
+        {shouldShowButton && <Button loadMore={this.handleLoadMoreButton} />}
 
         <ToastContainer />
         <GlobalStyled />
