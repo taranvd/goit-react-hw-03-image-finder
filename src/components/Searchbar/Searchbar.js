@@ -1,6 +1,13 @@
 import { Component } from 'react';
 import { BsSearch } from 'react-icons/bs';
-import './Searchbar.css';
+import styles from './Searchbar.module.css';
+
+const {
+  Searchbar: SearchbarWrap,
+  SearchForm,
+  SearchForm_button,
+  SearchForm_input,
+} = styles;
 
 export class Searchbar extends Component {
   state = {
@@ -19,14 +26,14 @@ export class Searchbar extends Component {
 
   render() {
     return (
-      <header className="Searchbar">
-        <form className="SearchForm" onSubmit={this.handleSubmitForm}>
-          <button type="submit" className="SearchForm-button ">
+      <header className={SearchbarWrap}>
+        <form className={SearchForm} onSubmit={this.handleSubmitForm}>
+          <button type="submit" className={SearchForm_button}>
             <BsSearch size="20" />
           </button>
 
           <input
-            className="SearchForm-input"
+            className={SearchForm_input}
             type="text"
             name="query"
             autoComplete="off"

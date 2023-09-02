@@ -1,10 +1,8 @@
 import { Component } from 'react';
-import './ImageGalleryItem.css';
 import { ModalBox } from 'components/Modal/Modal';
+import styles from './ImageGalleryItem.module.css';
 
-// export const ImageGalleryItem = ({ image, alt }) => {
-//   return <img src={image} alt={alt} className="ImageGalleryItem-image" />;
-// };
+const { ImageGalleryItem_image } = styles;
 
 export class ImageGalleryItem extends Component {
   state = {
@@ -28,7 +26,7 @@ export class ImageGalleryItem extends Component {
           onClick={this.openModal}
           src={image}
           alt={alt}
-          className="ImageGalleryItem-image"
+          className={ImageGalleryItem_image}
         />
         <ModalBox
           state={isModalOpen}
